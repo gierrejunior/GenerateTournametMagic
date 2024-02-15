@@ -13,8 +13,12 @@ class ListManager:
 
     def add_item(self, item):
         if item.strip():
-            items = [item.strip() for item in item.split(",")]
+            items = [item.strip().upper() for item in item.split(",")]
+            # Adiciona os itens à lista
             st.session_state[self.key].extend(items)
+            # Remove itens duplicados mantendo a ordem original
+            st.session_state[self.key] = list(
+                dict.fromkeys(st.session_state[self.key]))
             st.success(f"{self.item_label}(s) adicionado(s) com sucesso!")
 
     def remove_last_item(self):

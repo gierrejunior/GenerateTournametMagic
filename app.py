@@ -3,6 +3,7 @@ import streamlit as st
 from interfaces.list_manager import ListManager
 from magic_modules.generator_magic_duels import DuelsType
 
+
 if __name__ == "__main__":
     # Adiciona jogadores
     item_digitado_player = st.text_input(label="Digite um player:")
