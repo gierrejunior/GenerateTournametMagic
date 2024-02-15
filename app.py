@@ -22,22 +22,6 @@ if __name__ == "__main__":
         deck_manager.remove_last_item()
     deck_manager.display()
 
-    # Adiciona uma janela para selecionar múltiplos players do último duelo
-    last_duel = []
-    if "players" in st.session_state and st.session_state.players:
-        last_duel = st.multiselect(
-            label="Último duelo", options=st.session_state.players
-        )
-
-    if len(last_duel) > 2:
-        st.error(
-            "Por favor, selecione no máximo dois players que duelaram no último jogo"
-        )
-    elif len(last_duel) == 2:
-        st.write(f"Último duelo: {', '.join(last_duel)}")
-        # Aqui você pode adicionar os jogadores à sua variável ou fazer
-        # qualquer outra operação necessária
-
     # Adiciona a opção de escolher o modo de jogo
     if len(st.session_state.players) > 1 and len(st.session_state.decks) >= 2:
         # Verifica se o modo torneio é válido
@@ -56,7 +40,8 @@ if __name__ == "__main__":
                 horizontal=True,
                 index=0,
             )
-            st.error("O modo torneio só fica ativo se o número de jogadores for par.")
+            st.error(
+                "O modo torneio só fica ativo se o número de jogadores for par.")
             st.write(f"Modo escolhido: {modo}")
 
     else:
@@ -70,6 +55,24 @@ if __name__ == "__main__":
             "Você precisa ter mais de um jogador e pelo menos dois"
             "decks adicionados para escolher o modo de jogo."
         )
+
+    if len(st.session_state.players) > 1 and len(st.session_state.decks) >= 2:
+        if modo:
+            if modo == "Duelo simples":
+                # Adiciona uma janela para selecionar múltiplos players do último duelo
+                last_duel = []
+                if "players" in st.session_state and st.session_state.players:
+                    last_duel = st.multiselect(
+                        label="Último duelo", options=st.session_state.players
+                    )
+
+                if len(last_duel) > 2:
+                    st.error(
+                        'Por favor, selecione no máximo dois players'
+                        ' que duelaram no último jogo'
+                    )
+                elif len(last_duel) == 2:
+                    st.write(f"Último duelo: {', '.join(last_duel)}")
 
     # Seleção se os decks podem ser iguais
     if len(st.session_state.players) > 1 and len(st.session_state.decks) >= 2:
@@ -91,29 +94,28 @@ if __name__ == "__main__":
             "adicionados para optar se os decks poderão se repetir."
         )
 
-    if len(st.session_state.players) > 1 and len(st.session_state.decks) >= 2:
-        if modo:
-            if st.button("Processar"):
-                if repeat_deck == "sim":
-                    repeat = True
-                else:
-                    repeat = False
+    if repeat_deck == "sim":
+        repeat = True
+    else:
+        repeat = False
 
-                if modo == "Duelo simples":
-                    duel = DuelsType().singleDuel(
-                        players=st.session_state["players"],
-                        decks=st.session_state["decks"],
-                        players_last_duel=last_duel,
-                        used_decks={},
-                        decks_can_repeat=repeat,
-                    )
+    # Botão processar
+    if st.button("Processar"):
+        if modo == "Duelo simples":
+            duel = DuelsType().singleDuel(
+                players=st.session_state["players"],
+                decks=st.session_state["decks"],
+                players_last_duel=last_duel,
+                used_decks={},
+                decks_can_repeat=repeat,
+            )
 
-                if modo == "Torneio":
-                    duel = DuelsType().tournamentDuel(
-                        players=st.session_state["players"],
-                        decks=st.session_state["decks"],
-                        used_decks={},
-                        decks_can_repeat=repeat,
-                    )
+        elif modo == "Torneio":
+            duel = DuelsType().tournamentDuel(
+                players=st.session_state["players"],
+                decks=st.session_state["decks"],
+                used_decks={},
+                decks_can_repeat=repeat,
+            )
 
-                st.write(duel)
+        st.write(duel)
