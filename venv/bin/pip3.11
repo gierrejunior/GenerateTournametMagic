@@ -1,4 +1,4 @@
-#!/home/gierre/gierrejunior.github.io/venv/bin/python
+#!/home/gierre/magic_random/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

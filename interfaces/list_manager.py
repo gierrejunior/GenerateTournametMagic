@@ -1,60 +1,27 @@
-import ipywidgets as widgets
-from IPython.display import display
+# list_manager.py
+import streamlit as st
 
 
 class ListManager:
-    def __init__(self, lista_inicial=None, descricao_caixa='Digite um item:'):
-        # Crie uma lista para armazenar os itens
-        self.lista = lista_inicial or []
+    def __init__(self, key, item_label):
+        self.key = key
+        self.item_label = item_label
 
-        # Crie um widget Text para entrada de texto
-        self.text = widgets.Text(
-            value='',
-            description=descricao_caixa
-        )
+        # Inicializa a lista no estado da sessão, se ainda não existir
+        if self.key not in st.session_state:
+            st.session_state[self.key] = []
 
-        # Crie botões para adicionar, remover e finalizar
-        self.button_adicionar = widgets.Button(
-            description="Adicionar Item"
-        )
-        self.button_remover = widgets.Button(
-            description="Remover Último Item"
-        )
+    def add_item(self, item):
+        if item.strip():
+            items = [item.strip() for item in item.split(",")]
+            st.session_state[self.key].extend(items)
+            st.success(f"{self.item_label}(s) adicionado(s) com sucesso!")
 
-        # Associe as funções aos botões
-        self.button_adicionar.on_click(self.adicionar_item)
-        self.button_remover.on_click(self.remover_ultimo_item)
+    def remove_last_item(self):
+        if st.session_state[self.key]:
+            item_removed = st.session_state[self.key].pop()
+            st.write(f"Último {self.item_label} removido: {item_removed}")
 
-        # Exiba os widgets Text e os botões
-        display(self.text)
-        display(self.button_adicionar)
-        display(self.button_remover)
-
-    def adicionar_item(self, b):
-        item_digitado = self.text.value.strip()
-        print(item_digitado)
-
-        if item_digitado:
-            # Divide a string usando vírgulas como delimitador e remove espaços em branco
-            items = [item.strip() for item in item_digitado.split(",")]
-            
-
-            # Adiciona cada item à lista
-            self.lista.extend(items)
-
-            # Limpa o conteúdo da caixa de texto após adicionar o(s) item(ns)
-            self.text.value = ""
-
-        print(self.lista)  # Exibe a lista após adicionar item
-
-    def remover_ultimo_item(self, b):
-        if self.lista:
-            item_remover = self.lista.pop()
-            print(f"Último item removido: {item_remover}")
-        else:
-            print("Lista vazia")
-
-        print(self.lista)  # Exibe a lista após remover item
-
-    def finalizar(self, b):
-        return self.lista
+    def display(self):
+        st.write(f"Lista final de {self.item_label}s:",
+                 st.session_state[self.key])
