@@ -35,7 +35,8 @@ if __name__ == "__main__":
         )
     elif len(last_duel) == 2:
         st.write(f"Último duelo: {', '.join(last_duel)}")
-        # Aqui você pode adicionar os jogadores à sua variável ou fazer qualquer outra operação necessária
+        # Aqui você pode adicionar os jogadores à sua variável ou fazer
+        # qualquer outra operação necessária
 
     # Adiciona a opção de escolher o modo de jogo
     if len(st.session_state.players) > 1 and len(st.session_state.decks) >= 2:

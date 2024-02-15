@@ -60,17 +60,19 @@ class RandomizeList:
 class GeneratorMagicDuels(RandomizeList):
 
     def randomizePlayers(self, players: list, players_last_duel: list = []) -> List:
-        if not players:
+        temp_players = copy.deepcopy(players)
+        temp_player_last_duel = copy.deepcopy(players_last_duel)
+        if not temp_players:
             raise ValueError(
                 "randomizePlayers: The list is empty."
                 "You cannot randomize an empty list."
             )
 
-        if players_last_duel:
-            excluded_player = random.choice(players_last_duel)
-            players.remove(excluded_player)
+        if temp_player_last_duel:
+            excluded_player = random.choice(temp_player_last_duel)
+            temp_players.remove(excluded_player)
 
-        return self.randomizeList(2, players)
+        return self.randomizeList(2, temp_players)
 
     def randomizeDecksNoRepeat(
         self, decks: list, players: list, used_decks: dict = {}
@@ -178,6 +180,7 @@ class DuelsType(GeneratorMagicDuels):
         used_decks: dict,
         decks_can_repeat: bool = False,
     ):
+        temp_players = copy.deepcopy(players)
         tournament = []
         n_players = len(players)
         if n_players < 2:
@@ -200,14 +203,14 @@ class DuelsType(GeneratorMagicDuels):
         n_duels = int(n_duels)
 
         for duel in range(n_duels):
-            random_players = self.randomizePlayers(players)
+            random_players = self.randomizePlayers(temp_players)
             if isinstance(random_players, ValueError):
                 return random_players
             new_players_list = [
-                player for player in players if player not in random_players
+                player for player in temp_players if player not in random_players
             ]
 
-            players = new_players_list
+            temp_players = new_players_list
 
             if decks_can_repeat:
                 random_decks = self.randomizeDecksCanRepeat(
