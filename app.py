@@ -23,7 +23,11 @@ if __name__ == "__main__":
     deck_manager.display()
 
     # Adiciona uma janela para selecionar múltiplos players do último duelo
-    last_duel = st.multiselect(label="Último duelo", options=st.session_state.players)
+    last_duel = []
+    if "players" in st.session_state and st.session_state.players:
+        last_duel = st.multiselect(
+            label="Último duelo", options=st.session_state.players
+        )
 
     if len(last_duel) > 2:
         st.error(
@@ -93,6 +97,7 @@ if __name__ == "__main__":
                     repeat = True
                 else:
                     repeat = False
+
                 if modo == "Duelo simples":
                     duel = DuelsType().singleDuel(
                         players=st.session_state["players"],
@@ -101,4 +106,13 @@ if __name__ == "__main__":
                         used_decks={},
                         decks_can_repeat=repeat,
                     )
-                    st.write(duel)
+
+                if modo == "Torneio":
+                    duel = DuelsType().tournamentDuel(
+                        players=st.session_state["players"],
+                        decks=st.session_state["decks"],
+                        used_decks={},
+                        decks_can_repeat=repeat,
+                    )
+
+                st.write(duel)
