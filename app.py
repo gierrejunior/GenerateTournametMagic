@@ -3,7 +3,6 @@ import streamlit as st
 from interfaces.list_manager import ListManager
 from magic_modules.generator_magic_duels import DuelsType
 
-
 if __name__ == "__main__":
     # Adiciona jogadores
     item_digitado_player = st.text_input(label="Digite um player:")
@@ -103,7 +102,7 @@ if __name__ == "__main__":
     # Botão processar
     if st.button("Processar"):
         if modo == "Duelo simples":
-            duel = DuelsType().singleDuel(
+            simple_duel = DuelsType().singleDuel(
                 players=st.session_state["players"],
                 decks=st.session_state["decks"],
                 players_last_duel=last_duel,
@@ -111,12 +110,68 @@ if __name__ == "__main__":
                 decks_can_repeat=repeat,
             )
 
+            duel = simple_duel[0]
+            # Escreve a saída formatada
+            st.markdown(
+                f"<center><h2>Magiqueiro: {duel.get('player1')}</h2><h2> com o Deck: {duel.get('deck1')}</h2><h1>VS</h1><h2> Magiqueiro: {duel.get('player2')}</h2><h2> com o Deck: {duel.get('deck2')}</h2></center>", unsafe_allow_html=True
+            )
+            st.session_state["Duelo simples"] = duel
+
         elif modo == "Torneio":
-            duel = DuelsType().tournamentDuel(
-                players=st.session_state["players"],
+            if "winners" not in st.session_state:
+                st.session_state["winners"] = st.session_state["players"]
+
+            if "used_decks" not in st.session_state:
+                st.session_state["used_decks"] = {player: []
+                                                  for player in st.session_state["players"]}
+
+            duels = DuelsType().tournamentDuel(
+                players=st.session_state["winners"],
                 decks=st.session_state["decks"],
-                used_decks={},
+                used_decks=st.session_state["used_decks"],
                 decks_can_repeat=repeat,
             )
 
-        st.write(duel)
+            st.session_state["torneio"] = duels
+
+    if "torneio" in st.session_state:
+        duels = st.session_state["torneio"]
+        # Imprime os duelos e pede ao usuário para escolher o vencedor de cada duelo
+        winners = []
+        for i, duel in enumerate(duels):
+            st.markdown(
+                f"## Duelo {i+1}\n\n**{duel['player1']}** usando **{duel['deck1']}** VS **{duel['player2']}** usando **{duel['deck2']}**")
+            winner = st.selectbox(f'Escolha o vencedor do duelo {i+1}', [
+                duel['player1'], duel['player2']], key=f"duel_{i}")
+
+            # Salva a seleção do vencedor no session_state
+            st.session_state[f"winner_{i}"] = winner
+
+        if st.button("Finalizar"):
+            winners = [st.session_state[f"winner_{i}"]
+                       for i in range(len(duels))]
+
+            # Atualiza o dicionário used_decks após cada duelo
+            for i in range(len(duels)):
+                winner = st.session_state[f"winner_{i}"]
+                deck = duels[i]['deck1'] if duels[i]['player1'] == winner else duels[i]['deck2']
+                st.session_state["used_decks"][winner].append(deck)
+
+            # Realiza um novo torneio com os vencedores
+            st.session_state["winners"] = winners
+
+            if repeat:
+                st.session_state["torneio"] = DuelsType().randomizeDecksCanRepeat(
+                    decks=st.session_state["decks"],
+                    players=st.session_state["winners"],
+                    used_decks=st.session_state["used_decks"]
+                )
+            else:
+                st.session_state["torneio"] = DuelsType().randomizeDecksNoRepeat(
+                    decks=st.session_state["decks"],
+                    players=st.session_state["winners"],
+                    used_decks=st.session_state["used_decks"],
+                )
+
+            # Atualiza a variável duels para a próxima rodada de duelos
+            duels = st.session_state["torneio"]
