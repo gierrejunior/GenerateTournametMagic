@@ -127,19 +127,15 @@ class GeneratorMagicDuels(RandomizeList):
 
         return final_result_decks
 
-    def generateDictDuel(
-        self,
-        players: List,
-        decks: List,
-    ) -> Dict:
-
+    def generateDictDuel(self, players: List, decks: List) -> List[Dict]:
         if not players or not decks:
             raise ValueError(
                 "generateDictDuel: The list is empty."
                 " You cannot randomize an empty list."
             )
 
-        duel = dict(zip(players, decks))
+        duel = [{'player1': players[i], 'deck1': decks[i], 'player2': players[i+1], 'deck2': decks[i+1]}
+                for i in range(0, len(players), 2)]
         return duel
 
 
@@ -224,9 +220,10 @@ class DuelsType(GeneratorMagicDuels):
                 return random_decks
 
             match = self.generateDictDuel(random_players, random_decks)
-            if isinstance(duel, ValueError):
+            if isinstance(match, ValueError):
                 return match
 
-            tournament.append(match)
+            # Adicione cada dicionário individualmente à lista do torneio
+            tournament.extend(match)
 
         return tournament
