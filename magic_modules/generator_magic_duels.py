@@ -134,8 +134,15 @@ class GeneratorMagicDuels(RandomizeList):
                 " You cannot randomize an empty list."
             )
 
-        duel = [{'player1': players[i], 'deck1': decks[i], 'player2': players[i+1], 'deck2': decks[i+1]}
-                for i in range(0, len(players), 2)]
+        duel = [
+            {
+                "player1": players[i],
+                "deck1": decks[i],
+                "player2": players[i + 1],
+                "deck2": decks[i + 1],
+            }
+            for i in range(0, len(players), 2)
+        ]
         return duel
 
 
@@ -143,87 +150,91 @@ class DuelsType(GeneratorMagicDuels):
 
     def singleDuel(
         self,
-        players: list,
-        decks: list,
-        players_last_duel: list,
-        used_decks: dict,
+        players_or_players_and_decks: dict[str, list[str]] | list[str],
+        players_last_duel: list = [],
         decks_can_repeat: bool = False,
-    ):
-        random_players = self.randomizePlayers(players, players_last_duel)
-        if isinstance(random_players, ValueError):
-            return random_players
+    ) -> dict[str, str] | list[str]:
+        if isinstance(players_or_players_and_decks, list):
+            players = players_or_players_and_decks
+            drawn_players = random.sample(players, 2)
+            return drawn_players
 
-        if decks_can_repeat:
-            random_decks = self.randomizeDecksCanRepeat(
-                decks, random_players, used_decks
-            )
-        else:
-            random_decks = self.randomizeDecksNoRepeat(
-                decks, random_players, used_decks
-            )
+        elif isinstance(players_or_players_and_decks, dict):
+            players_and_decks = players_or_players_and_decks
 
-        if isinstance(random_decks, ValueError):
-            return random_decks
-        duel = self.generateDictDuel(random_players, random_decks)
-        if isinstance(duel, ValueError):
-            return duel
-        return duel
+            pd_last_duel_removed = {
+                key: value
+                for key, value in players_and_decks.items()
+                if value not in players_last_duel
+            }
+
+            drawn_players = random.sample(pd_last_duel_removed.keys(), 2)
+            drawn_players_and_decks: dict[str, str] = {}
+            for i, drawn_player in enumerate(drawn_players, start=1):
+                if decks_can_repeat:
+                    drawn_deck = random.choice(players_and_decks[drawn_player])
+                else:
+                    # Remove o deck já sorteado para evitar repetições
+                    available_decks = [
+                        deck
+                        for deck in players_and_decks[drawn_player]
+                        if deck not in drawn_players_and_decks.values()
+                    ]
+                    drawn_deck = random.choice(available_decks)
+
+                key_player = f"player_{i}"
+                key_deck = f"deck_{i}"
+                drawn_players_and_decks[key_player] = drawn_player
+                drawn_players_and_decks[key_deck] = drawn_deck
+
+            return drawn_players_and_decks
+
 
     def tournamentDuel(
         self,
         players: list,
-        decks: list,
-        used_decks: dict,
+        common_decks: list,
         decks_can_repeat: bool = False,
     ):
-        temp_players = copy.deepcopy(players)
-        tournament = []
-        n_players = len(players)
-        if n_players < 2:
-            raise ValueError(
-                "tournamentDuel: The number of players is less than 2."
-                " You cannot have a duel with less than 2 players."
-            )
+        pass
+        # temp_players = copy.deepcopy(players)
+        # tournament = []
+        # n_players = len(players)
+        # n_brackets = n_players // 2
 
-        n_duels = n_players / 2
-        if n_duels < 1:
-            raise ValueError(
-                "tournamentDuel: The number of players is less than 2."
-                " You cannot have a duel with less than 2 players."
-            )
-        if n_duels % 1 != 0:
-            raise ValueError(
-                "tournamentDuel: The number of players is odd."
-                " You cannot have a duel with an odd number of players."
-            )
-        n_duels = int(n_duels)
+        # for player in players:
+        #     player_deck = {player: decks}
 
-        for duel in range(n_duels):
-            random_players = self.randomizePlayers(temp_players)
-            if isinstance(random_players, ValueError):
-                return random_players
-            new_players_list = [
-                player for player in temp_players if player not in random_players
-            ]
+        # for bracket in range(n_brackets):
 
-            temp_players = new_players_list
+        #     f"bracket{n_brackets}": {}
 
-            if decks_can_repeat:
-                random_decks = self.randomizeDecksCanRepeat(
-                    decks, random_players, used_decks
-                )
-            else:
-                random_decks = self.randomizeDecksNoRepeat(
-                    decks, random_players, used_decks
-                )
-            if isinstance(random_decks, ValueError):
-                return random_decks
+        #     random_players = self.randomizePlayers(temp_players)
+        #     if isinstance(random_players, ValueError):
+        #         return random_players
 
-            match = self.generateDictDuel(random_players, random_decks)
-            if isinstance(match, ValueError):
-                return match
+        #     new_players_list = [
+        #         player for player in temp_players if player not in random_players
+        #     ]
 
-            # Adicione cada dicionário individualmente à lista do torneio
-            tournament.extend(match)
+        #     temp_players = new_players_list
 
-        return tournament
+        #     if decks_can_repeat:
+        #         random_decks = self.randomizeDecksCanRepeat(
+        #             decks, random_players, used_decks
+        #         )
+        #     else:
+        #         random_decks = self.randomizeDecksNoRepeat(
+        #             decks, random_players, used_decks
+        #         )
+        #     if isinstance(random_decks, ValueError):
+        #         return random_decks
+
+        #     match = self.generateDictDuel(random_players, random_decks)
+        #     if isinstance(match, ValueError):
+        #         return match
+
+        #     # Adicione cada dicionário individualmente à lista do torneio
+        #     tournament.extend(match)
+
+        # return tournament
