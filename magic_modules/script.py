@@ -81,6 +81,7 @@ def excluir_arquivos(diretorio):
         if filename.endswith(".identifier"):
             os.remove(os.path.join(diretorio, filename))
 
+gierre, gabs, bruno
 
 # # Substitua 'caminho_para_sua_pasta' pelo caminho do diretório que contém os arquivos que você deseja renomear
 renomear_arquivos(alone)
