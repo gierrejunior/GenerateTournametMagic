@@ -1,3 +1,4 @@
+venv
 __pycache__
 interfaces/__pycache__/*pyc
 magic_modules/__pycache__/*pyc
