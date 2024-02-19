@@ -66,10 +66,9 @@ class DataManager:
             new_individual_decks = [individual_deck.strip().upper(
             ) for individual_deck in individual_deck.split(",")]
             # Adiciona os decks à lista
-            existing_individual_decks.extend(new_individual_decks)
-            # Remove decks duplicados mantendo a ordem original
-            existing_individual_decks = list(
-                dict.fromkeys(existing_individual_decks))
+            for deck in new_individual_decks:
+                # Adiciona o deck ao dicionário
+                existing_individual_decks[deck] = True
 
             st.success(
                 f"Deck(s) individual(is) {new_individual_decks}(s) do Magiqueiro {player} adicionado(s) com sucesso!")
