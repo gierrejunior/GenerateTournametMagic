@@ -6,10 +6,10 @@ class DuelsType():
 
     def singleDuel(
         self,
-        players_or_players_and_decks: Union[Dict[str, List[str]], List[str]],
+        players_or_players_and_decks: Union[Dict[str, Dict[str, bool]],
+                                            List[str]],
         players_last_duel: List = [],
         decks_can_repeat: bool = False,
-        used_decks: Dict[str, List[str]] = {}
     ) -> Union[Dict[str, str], List[str]]:
 
         if isinstance(players_or_players_and_decks, list):
@@ -31,11 +31,12 @@ class DuelsType():
             for i, drawn_player in enumerate(drawn_players, start=1):
                 available_decks = [
                     deck
-                    for deck in players_and_decks[drawn_player]
-                    if deck not in used_decks.get(drawn_player, [])
+                    for deck, is_active in players_and_decks[drawn_player]
+                    .items()
+                    if is_active  # only consider the deck if it is active
                 ]
                 if not decks_can_repeat:
-                    # Remove o deck já sorteado para evitar repetições
+                    # Remove os decks inativos para evitar repetições
                     available_decks = [
                         deck
                         for deck in available_decks

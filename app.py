@@ -6,8 +6,8 @@ import streamlit as st
 from streamlit_extras.app_logo import add_logo
 from streamlit_extras.stoggle import stoggle
 
-from interfaces.data_manager import DataManager
 from magic_modules.generator_magic_duels import DuelsType
+from repositories.data_manager import DataManager
 
 
 def autoplay_loop_audio(file_path: str):
@@ -120,8 +120,6 @@ if __name__ == "__main__":
                 if repeat_deck == yes_or_no[1]:
                     can_repeat_deck = True
 
-            st.session_state['last_duel'] = []
-            players_last_duel = st.session_state['last_duel']
             if not is_random_decks:
                 # Pergunta se quer adicioanr os jogadores do ultimo duelo
                 is_add_last_duel = st.checkbox(
@@ -141,6 +139,12 @@ if __name__ == "__main__":
                     elif len(players_last_duel) == 2:
                         st.write(
                             f"Último duelo: {', '.join(players_last_duel)}")
+                else:
+                    if st.session_state.get('players_last_duel'):
+                        players_last_duel = st.session_state.get(
+                            'players_last_duel')
+                    else:
+                        players_last_duel = []
 
             if is_random_decks:
 
@@ -149,7 +153,6 @@ if __name__ == "__main__":
                     "Gostaria de adicionar os jogadores do ultimo duelo?"
                 )
                 # Adiciona uma janela para selecionar os dois players do último duelo
-                players_last_duel = []
                 if is_add_last_duel:
                     players_last_duel = st.multiselect(
                         label="Último duelo", options=st.session_state.players
@@ -162,6 +165,41 @@ if __name__ == "__main__":
                     elif len(players_last_duel) == 2:
                         st.write(
                             f"Último duelo: {', '.join(players_last_duel)}")
+                else:
+                    if st.session_state.get('players_last_duel'):
+                        players_last_duel = st.session_state.get(
+                            'players_last_duel')
+                    else:
+                        players_last_duel = []
+
+                is_deactivate_deck = st.checkbox(
+                    "Gostaria de ativar ou desativar algum deck?")
+                if is_deactivate_deck:
+                    selected_player = st.selectbox(
+                        "Escolha o Magiqueiro:", st.session_state.players)
+
+                    # Obtém os decks do jogador selecionado
+                    player_decks = st.session_state.players_and_decks.get(
+                        selected_player)
+
+                    # Cria uma lista de verificação para os decks
+                    for deck, is_active in player_decks.items():
+                        is_checked = not is_active  # O deck está marcado se estiver desativado
+                        # Cria um identificador único
+                        unique_key = f"{selected_player}_{deck}"
+                        new_checked_value = st.checkbox(
+                            deck, value=is_checked, key=unique_key)
+
+                        # Atualiza o status do deck com base no valor da caixa de seleção
+                        player_decks[deck] = not new_checked_value
+
+            if not st.session_state.get('players_last_duel'):
+                st.session_state['players_last_duel'] = players_last_duel
+            players_last_duel = st.session_state['players_last_duel']
+
+            if not st.session_state.get('duel'):
+                st.session_state['duel'] = {}
+            duel = st.session_state['duel']
 
             if st.button("Gerar Duelo"):
                 if not is_random_decks:
@@ -169,6 +207,7 @@ if __name__ == "__main__":
                         st.session_state.players,
                         players_last_duel,
                     )
+                    st.session_state['duel'] = duel
 
                 else:
                     duel = DuelsType().singleDuel(
@@ -176,31 +215,46 @@ if __name__ == "__main__":
                         players_last_duel,
                         can_repeat_deck,
                     )
+                    st.session_state['duel'] = duel
 
                 st.write(duel)
 
-                if duel:
-                    st.write(
-                        'Salvar esse Duelo, como Ultimo duelo realizado?')
-                    col1, col2, col3, col4, col5 = st.columns(5)
-                    if col3.button("Salvar Duelo"):
-                        if not is_random_decks:
-                            st.write('dsfsdfds2')
-                            players_last_duel = duel
-                            if players_last_duel:
-                                st.success(
-                                    f'Ultimo duelo enter {players_last_duel[0]} e'
-                                    f' {players_last_duel[1]} foi salvo')
+            if st.session_state.get('duel'):
+                duel = st.session_state['duel']
 
-                        else:
-                            st.write('dsfsdfds3')
-                            players_last_duel = [
-                                duel.get('player_1'), duel.get('player_2')]
+                # Adiciona um botão para cada jogador sorteado para desativar o deck usado
+                for i in range(1, 3):
+                    player = duel.get(f'player_{i}')
+                    # Cria um identificador único para o botão
+                    unique_key = f"Desativar deck usado por {player}_{i}"
+                    if st.button(unique_key, key=unique_key):
+                        used_deck = duel.get(f"deck_{i}")
+                        st.session_state.players_and_decks[player][used_deck] = False
+                        st.success(
+                            f"Deck {used_deck} do Magiqueiro {player} desativado com sucesso!")
 
-                            if players_last_duel:
-                                st.success(
-                                    f'Ultimo duelo enter {players_last_duel[0]} e'
-                                    f' {players_last_duel[1]} foi salvo')
+                st.write('Salvar esse Duelo, como Ultimo duelo realizado?')
+                col1, col2, col3, col4, col5 = st.columns(5)
+                if col3.button("Salvar Duelo"):
+                    if not is_random_decks:
+                        players_last_duel = [
+                            duel.get('player_1'), duel.get('player_2')
+                        ]
+                        if players_last_duel:
+                            st.success(
+                                f'Ultimo duelo enter {players_last_duel[0]} e'
+                                f' {players_last_duel[1]} foi salvo')
+
+                    else:
+                        players_last_duel = [
+                            duel.get('player_1'), duel.get('player_2')
+                        ]
+
+                        if players_last_duel:
+                            st.success(
+                                f'Ultimo duelo entre {players_last_duel[0]} e'
+                                f' {players_last_duel[1]} foi salvo')
+                st.write(players_last_duel)
 
             imgs_magic_yugioh = imgs_magic + imgs_yugioh + imgs_embaralhando
             choice_img = random.choice(imgs_magic_yugioh)
