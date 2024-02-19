@@ -13,12 +13,14 @@ class DataManager:
         if player.strip():
             new_players = [player.strip().upper()
                            for player in player.split(",")]
-            # Adiciona os jogadores à lista
-            existing_players.extend(new_players)
-            # Remove jogadores duplicados mantendo a ordem original
-            existing_players = list(dict.fromkeys(existing_players))
-            st.success(
-                f"Magiqueiro(s) {existing_players}(s) adicionado(s) com sucesso!")
+            # Adiciona os jogadores à lista se eles ainda não existirem
+            for new_player in new_players:
+                if new_player not in existing_players:
+                    existing_players.append(new_player)
+                    st.success(
+                        f"Magiqueiro {new_player} adicionado com sucesso!")
+                else:
+                    st.warning(f"Magiqueiro {new_player} já existe!")
 
     def addCommonDeck(self, common_deck: str):
         if not st.session_state.get("players_and_decks"):
