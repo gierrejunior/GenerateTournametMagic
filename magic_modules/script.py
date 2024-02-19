@@ -87,3 +87,10 @@ gierre, gabs, bruno
 renomear_arquivos(alone)
 # Substitua 'caminho_para_sua_pasta' pelo caminho do diretório que contém os arquivos que você deseja excluir
 excluir_arquivos(alone)
+
+
+    "Agressão Arcana", "Arsenal Rebelde", "Assassinos Calculistas",
+    "Catadores Ferozes", "Dominação Aérea", "Esperança Crescente",
+    "Goblins pra Todo Lado", "Grande e Comande", "Legiões de Phyrexia",
+    "Manter a Paz", "Sacrificio Sucateado", "Segredos de Túmulo",
+    "Valor Voador", "Correndo em Frente", "Sabedoria Silvestre"
